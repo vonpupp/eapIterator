@@ -55,7 +55,7 @@ public class eapIterator {
         out.printf("%s-- Models [%d] (a package) --\n", tab, EaRepository.GetModels().GetCount());
         for(idx=0; idx<EaRepository.GetModels().GetCount(); idx++){
 	   i = EaRepository.GetModels().GetAt(idx);
-	   out.printf("%sModel #%d\n", tab, idx);
+	   out.printf("%sModel #%d ---\n", tab, idx);
 	   out.printf("%sName: %s, PackageID: %s, PackageGUID %s\n", tab, i.GetName(), i.GetPackageID(), i.GetPackageGUID());
 	   out.printf("%sCreated: %s, Modified: %s, Version: %s\n", tab, i.GetCreated(), i.GetModified(), i.GetVersion());
 	   out.printf("%sIsNamespace: %b, IsControlled: %b\n", tab, i.GetIsNamespace(), i.GetIsControlled());
@@ -71,6 +71,7 @@ public class eapIterator {
 	   out.printf("%sElement count: %d\n", tab, i.GetElements().GetCount());
 	   out.printf("%sDiagram count: %d\n", tab, i.GetDiagrams().GetCount());
 	   out.printf("%sConnector count: %d\n", tab, i.GetConnectors().GetCount());
+           out.printf("%s---\n", tab, idx);
         }
     }
 
@@ -128,8 +129,15 @@ public class eapIterator {
         }
     }
     
+    String subAlias(String s){
+        String alias = s.substring(0, Math.min(s.length(), 7));
+        return alias;
+    }
+    
     void relatewfrfi() {
+        short i, j;
         org.sparx.Package reqp, wfp, root;
+        org.sparx.Element req, wf;
         
         out.println("-- Packages  --");
         //listSubPackages(repo.GetPackageByID(0));
@@ -139,16 +147,51 @@ public class eapIterator {
         reqp = reqp.GetPackages().GetByName("Comum - Requisitos Funcionais de Interface (RFI)");
         //listPackages(4, reqp);
         //listDiagrams(6, reqp);
-        //listElements(6, reqp);
+        //listElements(4, reqp);
         
         wfp = repo.GetModels().GetByName("SIGA stable");
         wfp = wfp.GetPackages().GetByName("Biblioteca de Interfaces");
         wfp = wfp.GetPackages().GetByName("test");
         //listElements(6, wfp);
+        
+        for (i=0; i<wfp.GetElements().GetCount(); i++) {
+   	    wf = wfp.GetElements().GetAt(i);
+            for (j=0; j<reqp.GetElements().GetCount(); j++) {
+                req = reqp.GetElements().GetAt(j);
+
+                out.printf("wf(%d) = %s\n", i, wf.GetName());
+                out.printf("wf(%d) = %s\n", i, subAlias(wf.GetName()));
+                out.printf("req(%d) = %s\n", j, req.GetName());
+                out.printf("req(%d) = %s\n", j, subAlias(req.GetName()));
+                
+                if (subAlias(req.GetAlias()).equals(subAlias(wf.GetAlias()))) {
+                    out.printf("Creating relation between:\n");
+                    out.printf("  Element #%s\n", wf.GetElementGUID());
+                    out.printf("  Element #%s\n", req.GetElementGUID());
+//                    wf.GetConnectors().AddNew(inputFile, inputFile);
+
+                    Connector addNew = wf.GetConnectors().AddNew("moj usecase",  "UseCase");
+                    addNew.SetSupplierID(req.GetElementID());
+                    addNew.Update();
+                    wf.Refresh();
+
+                    
+//                    Connector addNew = e1.GetConnectors().AddNew("moj usecase",  "UseCase");
+//                    addNew.SetSupplierID(e2.GetElementID());
+//                    addNew.Update();
+//                    e1.Refresh();
+//                    
+//                    EA.Connector newConnector = Element.Connectors.AddNew("""Realization");
+//                    newConnector.SupplierID = myTargetID;
+//                    newConnector.Update(); 
+                }
+            }
+        }
+
     }
     
     public void run (String[] args) throws Exception {
-        inputFile = "C:\\ea\\siga.eap";
+        inputFile = "C:\\eap-iterator\\siga.eap";
         openRepository();
         listRepositoryInfo();
         listModels(2, repo);
