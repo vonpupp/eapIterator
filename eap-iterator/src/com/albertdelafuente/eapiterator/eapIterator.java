@@ -6,7 +6,6 @@ package com.albertdelafuente.eapiterator;
 import org.sparx.*;
 import java.lang.*;
 import static java.lang.System.out;
-import org.w3c.dom.css.RGBColor;
 
 /**
  *
@@ -169,8 +168,9 @@ public class eapIterator {
                     out.printf("  Element #%s\n", wf.GetElementGUID());
                     out.printf("  Element #%s\n", req.GetElementGUID());
 //                    wf.GetConnectors().AddNew(inputFile, inputFile);
-
-                    Connector addNew = wf.GetConnectors().AddNew("moj usecase",  "UseCase");
+                    
+                    //Connector addNew = wf.GetConnectors().AddNew("name", "UseCase"),
+                    Connector addNew = wf.GetConnectors().AddNew(subAlias(req.GetAlias()), "Realization");
                     addNew.SetSupplierID(req.GetElementID());
                     addNew.Update();
                     wf.Refresh();
@@ -191,6 +191,9 @@ public class eapIterator {
     }
     
     public void run (String[] args) throws Exception {
+        // Parameters example
+        // $0 -i eap -l -option(-all -guid) /root/model/submodel -o file -v 3
+        // $0 -i eap -o file
         inputFile = "C:\\eap-iterator\\siga.eap";
         openRepository();
         listRepositoryInfo();
@@ -202,7 +205,6 @@ public class eapIterator {
         //listSubPackages(6, repo.GetModels().GetAt((short) 0).GetPackages().GetAt((short) 1).GetPackages().GetAt((short) 1));
         //listSubPackages(repo.getp);
         //relatewfrfi();
-        System.out.println("hello");
     }
 
     /**
